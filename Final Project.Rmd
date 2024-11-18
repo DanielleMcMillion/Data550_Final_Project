@@ -1,0 +1,49 @@
+---
+title: "Final Project"
+author: "Danielle McMillion"
+date: "`r Sys.Date()`"
+output: html_document
+---
+
+Healthcare Payments Data (HPD) Healthcare Measures is a dataset that contains data in three main categories: Health Conditions, Utilization, and Demographics.  It includes the prevalence of long-term illnesses, healthcare usage rates, and demographic information, such as age and health coverage. Furthermore, measures are grouped in various ways, including year, region, and payer type. The objectives for this analysis will to compare payer type, region, year, health coverage, and long-term illnesses to identify possible trends in payer type and health coverage regarding region and long-term illness.
+
+```{r load-data, echo = FALSE}
+data_url <- "https://data.chhs.ca.gov/dataset/10358adb-6b56-40ad-abf0-413a833eef92/resource/6888c338-eda6-4e1f-a66d-69271437a409/download/measures-data.csv"
+data <- read.csv(data_url, header = TRUE)
+```
+
+## Table 
+This table compares the different payer types in California based on th reporting year, the age range and the sex of the patient.
+
+```{r, table1, echo = FALSE, message = FALSE}
+library(labelled) 
+library(gtsummary)
+
+var_label(data) <- list (
+  reporting_year = "Reporting Year", 
+  age_band = "Age Range",
+  assigned_sex_at_birth = "Sex", 
+  payer_type = "Payer Type"
+)
+data |>
+  select("reporting_year", "age_band", "assigned_sex_at_birth", "payer_type")|>
+  tbl_summary(by = payer_type) |> 
+  modify_spanning_header(c("stat_1", "stat_2") ~ "**Healthcare Payments in California**") |>
+  add_overall()
+```
+## Figure 
+This figure shows the diestribution of Healthcare Payments across Medi-Cal, Commercial, and Medicare in the state of California
+
+``` {r, echo = FALSE, message = FALSE}
+library(ggplot2)
+library(dplyr)
+
+category_count <- data %>%
+  group_by(payer_type) %>%
+ summarise(Count = n())
+
+ggplot(category_count, aes(x = payer_type, y = Count)) +
+  geom_bar(stat = "summary", fun = "sum", fill = "forestgreen") +
+  labs(title = "Total Distribution of Healthcare Payments in California ", x = "Healthcare Payments", y = "Number of payees") +
+  theme_minimal()
+```
